@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 
+
 #define ASIO_STANDALONE 1
 #include "asio.hpp"
 
@@ -12,22 +13,44 @@ using TcpEndPoint = ip::tcp::endpoint;
 using TcpSocket = ip::tcp::socket;
 using  namespace std::placeholders;
 
+class Reciever;
+
 template<class T>
-static void Handler(shared_ptr<TcpSocket> socket, T& buf, const asio::error_code& ec, std::size_t bytes_received){
+ void Handler(shared_ptr<Reciever> reciever, const asio::error_code& ec, std::size_t bytes_received){
 
 	if (!ec){
-		cout << buf << endl;
-		socket->async_receive(buffer(buf,100), bind(Handler<T>, socket, buf, _1, _2));
+		//synchronously write file 
+		FILE* file = fopen("file.html", "a+");
+		fwrite(reciever->buf_,1, bytes_received, file);
+		fclose(file);
+		reciever->total_read_len_ += bytes_received;
+		reciever->socket_->async_receive(buffer(reciever->buf_), std::bind(Handler<T>, reciever, _1,_2));
+	}
+	if (ec == asio::error::eof)
+	{
+		cout << reciever->total_read_len_ << endl;
+		std::cout << "EOF" << std::endl;
+		
 	}
 }
-struct Reciever
+class Reciever 
 {
+
+public:
 	char buf_[100];
+	std::size_t total_read_len_;
 	shared_ptr<TcpSocket> socket_;
-	Reciever(shared_ptr<TcpSocket> socket) :socket_(socket){ /*buf_.reserve(100);*/ }
+	
+	windows::stream_handle sh_;
+
+	/*template<class T>
+	friend void Handler(shared_ptr<Reciever> reciever, shared_ptr<TcpSocket> socket, T& buf, const asio::error_code& ec, std::size_t bytes_received);*/
+
+	Reciever(shared_ptr<TcpSocket> socket) :total_read_len_(0),socket_(socket),sh_(socket->get_io_service()){  }
+	Reciever(const Reciever& other) : Reciever(other.socket_){}
 	
 	void operator()(){
-		socket_->async_receive(buffer(buf_,100), bind(Handler<char*>,socket_,buf_,_1,_2));
+		socket_->async_receive(buffer(buf_), bind(Handler<char*>, make_shared<Reciever>(const_cast<Reciever&>(*this)), _1, _2));
 	}
 
 	
@@ -39,15 +62,21 @@ int main()
 {
 	io_service myservice;
 	shared_ptr<TcpSocket> sock(new TcpSocket(myservice));
-	TcpEndPoint ep(ip::address::from_string("77.238.184.150"),80);
+	TcpEndPoint ep(ip::address::from_string("185.53.179.8"),80);
 	Reciever recv(sock);
 
 	sock->async_connect(ep, [&sock, &recv](const asio::error_code& ec){
 		if (!ec)
 		{
-			//sock.async_send()
-			sock->async_send(buffer("GET / HTTP1.1\nhost:www.yahoo.fr\nuser-agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36\n\n"), [&sock,&recv](const asio::error_code& ec, std::size_t bytes_transferred){
-				cout << bytes_transferred << endl;
+			char* header = "GET /docs/index.html HTTP/1.1\n"
+				"Host: www.nowhere123.com\n"
+				"Accept : image / gif, image / jpeg, */*\n"
+				"Accept-Language: en-us\n"
+				
+				"User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)\n\n";
+
+			sock->async_send(buffer(header,strlen(header)), [&sock, &recv](const asio::error_code& ec, std::size_t bytes_transferred){
+				
 				if (!ec){
 
 					recv();					
