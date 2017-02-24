@@ -17,3 +17,4 @@ endfunction()
 
 
 register_target(hello-world)
+register_target(socket-server)
