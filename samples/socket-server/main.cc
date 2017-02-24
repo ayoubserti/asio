@@ -23,9 +23,7 @@ public:
 	char buf_[2048];
 
 	Client(shared_ptr<TcpSocket> sock) :socket_(sock){ memset(buf_, 0, 2048); }
-	Client(const Client& other) :Client(other.socket_){
-		memcpy(buf_, other.buf_, 2048);
-	}
+	
 	static void handle_read(shared_ptr<Client> client, const asio::error_code& err, std::size_t rlen){
 		if (!err)
 		{
@@ -40,13 +38,24 @@ public:
 	TcpSocket& getSocket(){ return *(socket_.get()); }
 
 
-	void run(){
-		socket_->async_receive(buffer(buf_), bind(Client::handle_read, make_shared<Client>(const_cast<Client&>(*this)), _1, _2));
+	void run() {
+		socket_->async_receive(buffer(buf_), bind(Client::handle_read, shared_ptr<Client>(const_cast<Client*>(this)), _1, _2));
 	}
+
+	Client(const Client& other) = delete;
+	Client& operator=(const Client& other) = delete;
+	Client( Client&& other) = delete;
 };
 
-static void server_handle_accept(Client client, const asio::error_code& err){
+static void server_handle_accept(TcpAcceptor& acceptor, Client& client, const asio::error_code& err){
+
+	client.run();
+	/*TcpSocket sock(acceptor.get_io_service());
+	acceptor.async_accept(sock,[](const asio::error_code& ec){
+		cout << "New Connection" << endl;
+	});*/
 	
+
 	
 }
 
@@ -62,15 +71,16 @@ int main(){
 	clients.push_back(&client);
 	TcpSocket& sock = client.getSocket();
 
-	server_acc.async_accept(sock, [&sock,&client](const asio::error_code& err){
+	server_acc.async_accept(sock, std::bind(server_handle_accept,server_acc, client, _1));
+	//[&sock, &client](const asio::error_code& err){
 		//every time a connection come we create a new free socket;
 		//shared_ptr<TcpSocket> new_sock_ptr(new TcpSocket(sock.get_io_service()));
-		client.run();
+		//client.run();
 		/*sock.async_receive(buffer(client.buf_), [&client](const asio::error_code& err, std::size_t rlen){
 			cout << client.buf_ << endl;
 		});*/
-	});
-
+	//});
+	
 	server_service.run();
 
 	return 0;
