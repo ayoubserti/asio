@@ -46,7 +46,7 @@ private:
 	Server&		server_;
 	TcpSocket	socket_;
 	bool		stoped_ = false;
-	char buf_[2048];
+	char buf_[100];
 	
 
 	

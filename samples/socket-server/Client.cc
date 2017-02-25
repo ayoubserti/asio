@@ -7,7 +7,7 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
         buf_[rlen] = '\0';
         cout << buf_ << endl;
 		run();
-		socket_.async_send(buffer("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"), [this](const asio::error_code& ec, std::size_t wr_len){
+		socket_.async_send(buffer("HTTP/1.1 200 OK\r\nConnection: Closed\r\n Content-Length: 0\r\n\r\n"), [this](const asio::error_code& ec, std::size_t wr_len){
 			
 			this->stop();
 			
@@ -16,7 +16,7 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
     }
     else if (err == asio::stream_errc::eof)
     {
-        on_close();
+        //on_close();
     }
     else {
         cout << err.message() << endl;
@@ -27,7 +27,7 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 Client::Client(Server& server) :server_(server),
      socket_(server.get_io_service())
 {
-     memset(buf_, 0, 2048); 
+     //memset(buf_, 0, 512); 
 }
 
 void Client::run() 
