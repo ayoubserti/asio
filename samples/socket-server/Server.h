@@ -25,7 +25,7 @@ class Server
 	TcpEndPoint		ep_;
 	TcpAcceptor		acceptor_;
 	
-	using  ClientVector = vector<shared_ptr<Client>>;
+	using  ClientVector = list<shared_ptr<Client>>;
 	ClientVector clients_;
 	
 	
