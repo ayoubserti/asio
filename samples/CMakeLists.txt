@@ -14,7 +14,13 @@ function(register_target tname)
 
 endfunction()
 
+#function register http_parser
+function(register_http_parser)
+	file(GLOB SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../http-parser/http_parser.c" "${CMAKE_CURRENT_SOURCE_DIR}/../http-parser/http_parser.h")
+	add_library(http_parser STATIC ${SOURCE_FILES})
 
+endfunction()
 
+register_http_parser()
 register_target(hello-world)
 register_target(socket-server)
