@@ -9,15 +9,17 @@ using namespace std;
 using namespace std::placeholders;
 
 
-
+class Response;
 
 
 class Request
 {
-	
+public :
+	typedef unordered_map<string, string> HeadersMap;
+private:	
 	http_method method_;
 	string url_;
-	typedef unordered_map<string, string> HeadersMap;
+	
 	HeadersMap  headers_;
 	string method_str_;
 	string next_header_;
@@ -26,6 +28,7 @@ class Request
 	
 
 public:
+	
 	static int on_message_begin(http_parser *p)
 	{
 		return 0;
@@ -147,6 +150,17 @@ public:
         return method_str_;
     }
 	
-
+	string stringify()
+	{
+		string result{};
+		result += method_str_ + " " ;
+		result += url_ + " HTTP/1.1\n";
+		for (auto& i : headers_)
+		{
+			result += i.first + ": " + i.second + "\n";
+		}
+		result += "\n";
+		return result;
+	}
 };
     

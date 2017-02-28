@@ -20,5 +20,6 @@ int main(void)
 	req.parse(data, requestlen);
 	
 	cout << "Request Lenght: " << requestlen << endl;
+	cout << req.stringify();
 	return 0;
 }
