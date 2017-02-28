@@ -9,7 +9,7 @@ using namespace std;
 
 
 
-struct Request
+class Request
 {
 	
 	http_method method_;
@@ -19,20 +19,32 @@ struct Request
 	string method_str_;
 	string next_header_;
 
+public:
+	int on_message_begin(http_parser *p)
+	{
+		cerr << "Message Begin" << endl;
+		Request* req = new Request;
+		p->data = req;
+		return 0;
+	}
+
+	int on_header_field(http_parser *p, const char *buf, size_t len)
+	{
+		reinterpret_cast<Request*>(p->data)->next_header_ = string(buf, len);  return 0;
+	}
+
+	int on_header_value(http_parser *p, const char *buf, size_t len)
+	{
+		Request* o = reinterpret_cast<Request*>(p->data);
+		o->headers_[o->next_header_] = string(buf, len);  
+		return 0;
+	}
+
+
+
+	
 };
-
-int message_begin_cb(http_parser *p){
-	cerr << "Message Begin" << endl;
-	Request* req = new Request;
-	p->data = req;
-	return 0;
-}
-
-int header_field_cb(http_parser *p, const char *buf, size_t len){ reinterpret_cast<Request*>(p->data)->next_header_ = string(buf, len);  return 0; }
     
-int header_value_cb(http_parser *p, const char *buf, size_t len){
-	Request* o = reinterpret_cast<Request*>(p->data);
-	o->headers_[o->next_header_] = string(buf, len);  return 0; }
     
 int request_url_cb(http_parser *p, const char *buf, size_t len){ 
 	Request* req = reinterpret_cast<Request*>(p->data);
