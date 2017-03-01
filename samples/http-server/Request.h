@@ -27,7 +27,7 @@ private:
 	size_t body_len_;
 	
 
-public:
+
 	
 	static int on_message_begin(http_parser *p)
 	{
@@ -101,7 +101,7 @@ public:
 		return 0;
 
 	}
-
+public:
 	int parse(const char* buf,std::size_t len){
 		
 		http_parser parser;
@@ -161,6 +161,10 @@ public:
 		}
 		result += "\n";
 		return result;
+	}
+	string get_header(const string& name)
+	{
+		return headers_[name];
 	}
 };
     
