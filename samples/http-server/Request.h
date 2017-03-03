@@ -23,8 +23,8 @@ private:
 	HeadersMap  headers_;
 	string method_str_;
 	string next_header_;
-	char* body_;
-	size_t body_len_;
+	char* body_=nullptr;
+	size_t body_len_=0;
 	
 
 

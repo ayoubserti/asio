@@ -63,11 +63,19 @@ public:
 		}
 	}
 
+	
+	
+	void set_header(const string& name, std::size_t value)
+	{
+
+		headers_[name] = std::to_string((long long)value);
+	}
+
+
 	void set_header(const string& name, const string& value)
 	{
 		headers_[name] = value;
 	}
-
 	void append_body(const char* buf, size_t len)
 	{
 		body_ = reinterpret_cast<char*>(::malloc(len));
