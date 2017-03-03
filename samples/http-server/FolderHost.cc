@@ -1,18 +1,11 @@
 #include "FolderHost.h"
 #include <algorithm>
 #include <urlmon.h>
-#include <codecvt>
+#include "Utils.h"
 
 #pragma comment(lib, "urlmon.lib")
 
-//private function
-string ws2s(const std::wstring& wstr)
-{
-	using convert_typeX = std::codecvt_utf8<wchar_t>;
-	std::wstring_convert<convert_typeX, wchar_t> converterX;
 
-	return converterX.to_bytes(wstr);
-}
 
 FolderHost::FolderHost(const string& host_name)
 {
@@ -58,11 +51,25 @@ std::size_t FolderHost::get_file_length(const string& file_name)
 std::string FolderHost::get_file_mime(const string& file_name)
 {
 	string result("");
+	path full_path = folder_path_;
+	full_path /= file_name;
+	
+	if (full_path.extension() == ".js")
+	{
+		return "application/javascript";
+	}
+	else if (full_path.extension() == ".html" || full_path.extension() == ".htm")
+	{
+		return "text/html";
+	}
+	else if (full_path.extension() == ".css")
+	{
+		return "text/css"; 
+	}
+
 	char data[265];
 	LPWSTR out;
 
-	path full_path = folder_path_;
-	full_path /= file_name;
 	FILE* file = fopen(full_path.string().c_str(), "r");
 	fread(data, 1, 256, file);
 	

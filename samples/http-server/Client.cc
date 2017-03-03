@@ -3,7 +3,27 @@
 #include "Request.h"
 #include "Response.h"
 #include "FolderHost.h"
+#include "Utils.h"
 
+//private function
+
+std::string urlDecode(std::string &eString) {
+	std::string ret;
+	char ch;
+	int i, j;
+	for (i = 0; i<eString.length(); i++) {
+		if (int(eString[i]) == 37) {
+			sscanf(eString.substr(i + 1, 2).c_str(), "%x", &j);
+			ch = static_cast<char>(j);
+			ret += ch;
+			i = i + 2;
+		}
+		else {
+			ret += eString[i];
+		}
+	}
+	return (ret);
+}
 void Client::handle_read(const asio::error_code& err, std::size_t rlen){
     if (!err && !stoped_)
     {
@@ -13,6 +33,7 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 		FolderHost fhost(req.get_header("Host"));
 
 		auto url = req.get_url();
+		url = urlDecode(url);
 		if (url == "/")
 		{
 			url = "/index.html";
@@ -43,13 +64,21 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 			memcpy(to_buf, tosend.c_str(), tosend.size());
 			if (socket_.is_open())
 			{
-				socket_.async_send(buffer(to_buf, tosend.size()), [this, &data, file_length](const asio::error_code& ec, std::size_t wr_len){
+				
+				socket_.send(buffer(to_buf, tosend.size()));
+				socket_.send(buffer(data, file_length));
+				::free(data);
+				/*socket_.async_send(buffer(to_buf, tosend.size()), [this, &data, file_length](const asio::error_code& ec, std::size_t wr_len){
 					socket_.async_send(buffer(data, file_length), [file_length, &data,this](const asio::error_code& ec, std::size_t wr_len2){
 						//if (wr_len2 == file_length);
 							//::free(data);
 						//if (file_length == wr_len2) this->stop();
+						int d = 0;
+						d++;
+						if (ec)
+							cout << ec.message() << endl;
 					});
-				});
+				});*/
 
 			}
 
@@ -139,4 +168,5 @@ void Client::stop()
 	stoped_ = true;
 	on_close();
 }
+
 

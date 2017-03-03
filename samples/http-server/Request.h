@@ -51,7 +51,7 @@ private:
 		Request* req = reinterpret_cast<Request*>(p->data);
 		http_parser_url url;
 		http_parser_url_init(&url);
-		cout << http_parser_parse_url(buf, len, 0, &url);
+		
 		req->url_ = string(buf, len);
 		return 0;
 	}
@@ -68,13 +68,6 @@ private:
 
 	static int on_headers_complete(http_parser *p) 
 	{
-
-		Request* o = reinterpret_cast<Request*>(p->data);
-		for (auto&i : o->headers_)
-		{
-			cout << i.first << "      " << i.second << endl;
-		}
-
 		return 0;
 	}
 	
@@ -84,7 +77,6 @@ private:
 		req->method_str_ = http_method_str((http_method)p->method);
 		req->method_ = (http_method)p->method;
 
-		cerr << "Message Complete" << endl;
 		return 0;
 	}
 
