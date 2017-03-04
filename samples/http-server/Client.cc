@@ -83,51 +83,6 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 			}
 
 		}
-
-		/*
-		Response res;
-		res.set_status(HTTP_STATUS_OK);
-		res.set_header("Content-Type", "text/html");
-		if (req.get_url() == "/favicon.ico")
-		{
-			res.set_header("Content-Type", "image/x-icon");
-			auto filelen = fhost.get_file_length(req.get_url());
-			auto mime = fhost.get_file_mime(req.get_url());
-			res.set_header("Content-Length", filelen);
-			res.set_header("Connection", "keep-alive");
-			char *data = (char*)::malloc(filelen);
-			fhost.get_file_content(req.get_url(), data, filelen);
-			string tosend = res.stringify();
-			memcpy(to_buf, tosend.c_str(), tosend.size());
-			if (socket_.is_open())
-			{
-				socket_.async_send(buffer(to_buf,tosend.size()), [this,&data,filelen](const asio::error_code& ec, std::size_t wr_len){
-					socket_.async_send(buffer(data, filelen), [filelen,&data](const asio::error_code& ec, std::size_t wr_len){
-						if (wr_len == filelen)
-							::free(data);
-					});
-				});
-				
-			}
-				
-
-		}
-		else
-		{
-			char data[] = "<html><head><title>From asio</title></head><body>Message From Asio</body></html>";
-			res.set_header("Content-Length", std::to_string(strlen(data)));
-			res.set_header("Connection", "keep-alive");
-			string tosend = res.stringify() + data;
-			memcpy(to_buf, tosend.c_str(), tosend.size());
-			if (socket_.is_open())
-				socket_.async_send(buffer(to_buf), [this](const asio::error_code& ec, std::size_t wr_len){
-
-
-
-			});
-		}
-		*/
-		
 		run();
         
     }

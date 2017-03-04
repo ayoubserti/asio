@@ -158,5 +158,10 @@ public:
 	{
 		return headers_[name];
 	}
+	~Request()
+	{
+		if (body_ != nullptr)
+			::free(body_);
+	}
 };
     

@@ -82,7 +82,10 @@ public:
 		body_length = len;
 	}
 
-	
+	~Response(){
+		if (body_ != nullptr)
+			::free(body_);
+	}
 	
 };
 
