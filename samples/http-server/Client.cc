@@ -33,12 +33,14 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 		FolderHost fhost(req.get_header("Host"));
 
 		auto url = req.get_url();
-		url = urlDecode(url);
+		
 		if (url == "/")
 		{
 			url = "/index.html";
 		}
-		bool file_exist = fhost.file_exist(url);
+		url = decodeUrl(url);
+		wstring wurl = s2ws(url);
+		bool file_exist = fhost.file_exist(wurl);
 		if (!file_exist)
 		{
 			Response res;
@@ -49,8 +51,8 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 		}
 		else
 		{
-			auto file_mime = fhost.get_file_mime(url);
-			auto file_length = fhost.get_file_length(url);
+			auto file_mime = fhost.get_file_mime(wurl);
+			auto file_length = fhost.get_file_length(wurl);
 			
 			Response res;
 			res.set_status(HTTP_STATUS_OK);
@@ -58,7 +60,7 @@ void Client::handle_read(const asio::error_code& err, std::size_t rlen){
 			res.set_header("Connection", "keep-alive");
 			res.set_header("Content-Type", file_mime);
 			char *data = (char*)::malloc(file_length);
-			fhost.get_file_content(url, data, file_length);
+			fhost.get_file_content(wurl, data, file_length);
 			string tosend = res.stringify();
 			
 			memcpy(to_buf, tosend.c_str(), tosend.size());

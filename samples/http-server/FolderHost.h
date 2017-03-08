@@ -25,4 +25,14 @@ public:
 	std::size_t get_file_length(const string& file_name);
 
 	std::string get_file_mime(const string& file_name);
+
+	bool file_exist(const wstring& file_name);
+
+	void get_file_content(const wstring& file_name, std::function<void(const std::error_code& ec, char buf[], std::size_t len)> callback);
+
+	void get_file_content(const wstring& file_name, char buf[], std::size_t& len);
+
+	std::size_t get_file_length(const wstring& file_name);
+
+	std::string get_file_mime(const wstring& file_name);
 };
