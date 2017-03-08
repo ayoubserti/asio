@@ -2,7 +2,7 @@
 #include "Client.h"
 
 Server::Server() 
-:ep_(ip::address::from_string("127.0.0.1"), 8100)
+	:ep_(ip::address_v4::any(), 8100)
 ,acceptor_(service_,ep_)
 {
 		
